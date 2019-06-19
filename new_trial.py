@@ -1,7 +1,7 @@
 import numpy as np
 import random
 from dist_bw_pts import distance,new_point,border,coord_plot
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time
 
 start = time.time()
@@ -11,19 +11,27 @@ A_f = np.pi * d**2 /4
 ##a = int(raw_input("Side of the square area to be filled: "))
 a = 50
 A = a**2
+mag = d+0.05
+
+#A_f_act = np.pi * (mag)**2 / 4
+#A_act = (a-2*d)**2
+#n_max = A_act/A_f_act
+#V_f_max = float(int(n_max) * A_f / A)
+#print n_max
 
 ##V_f = float(raw_input("Preferred Volume fraction: "))
-V_f = 0.2
+V_f = 0.50
 n = int(V_f * A/A_f)
-print n
+print 'Number of fibers to be filled in the area : ', n
 
-x = np.arange(-a/2+d,a/2-d+0.1, 0.1)
-y = np.arange(-a/2+d,a/2-d+0.1, 0.1)
+dist_border = 0.05 # from the edge and the edge of fiber
+
+x = np.arange(-a/2+d/2+dist_border,a/2-d/2+dist_border+0.1, 0.1)
+y = np.arange(-a/2+d/2+dist_border,a/2-d/2+dist_border+0.1, 0.1)
 xx, yy = np.meshgrid(x,y)
 
 space = []
 coord = []
-mag = 3*d/2
 
 for j in range(xx.shape[0]):
         for k in range(xx.shape[1]):
@@ -48,4 +56,4 @@ end = time.time()
 print(end-start)
 
 ##coord_plot(border)
-coord_plot(coord)
+#coord_plot(coord)
