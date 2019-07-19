@@ -36,3 +36,9 @@ def coord_plot(coord):
         Y = Y + [coord[i][1]]
     plt.scatter(X,Y)
     plt.show()
+
+def noise(max_movement):
+    noise_x = np.random.uniform(-max_movement, max_movement)
+    noise_y = np.random.choice([-1,1]) * np.sqrt(1 - noise_x**2)
+    noise = np.array([noise_x, noise_y])
+    return noise
