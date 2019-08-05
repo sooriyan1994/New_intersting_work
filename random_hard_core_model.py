@@ -2,7 +2,11 @@ import numpy
 import matplotlib.pyplot as plt
 import time
 
-# TO check the execution time of the program
+'''Random Hard core model randomly chooses point from the discretised space and then deletes all the points
+cannot be selected further. The next point is selected from the pool of remaining points and the process goes
+on till the pool is dried up'''
+
+# To check the execution time of the program
 start = time.time()
 
 ##d = int(input("Enter the diameter of the fibre (in microns): "))
@@ -22,7 +26,8 @@ V_f = 0.5
 n = int(V_f * A/A_f)
 print('Number of fibers to be filled in the area : ', n)
 
-dist_border = 0.1 # distance b/w the edge and the edge of fiber
+# distance b/w the edge and the edge of fiber
+dist_border = 0.1 
 
 #Discretising the square area
 x = numpy.linspace(dist_border+d/2, a-(dist_border+d/2), 600, dtype=numpy.float)

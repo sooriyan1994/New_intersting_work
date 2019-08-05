@@ -8,14 +8,14 @@ d = 6 #in mm
 A_f = (np.pi * d**2)/4
 
 #Area of the square the fiber has to be filled
-a = 60 #side of square(in mm)
+a = 50 * (d/2) #side of square(in mm)
 A = a**2
 
 dis = 0.1 #Distance betweeen two fibers
 mag = d + dis # Minimum Distance between two fiber centers
 
 ##V_f = float(input("Preferred Volume fraction: "))
-V_f = 0.60
+V_f = 0.55
 
 # specify params
 n = int((V_f * A)/A_f)
@@ -38,8 +38,8 @@ y_t = np.arange(y_s[0] + (y_s[1]- y_s[0])/2, a-(dist_border + d/2), y_s[1]-y_s[0
 #Packing hexagonal mesh
 coords = np.append(np.stack(np.meshgrid(x_s, y_s), -1), np.stack(np.meshgrid(x_t, y_t), -1)).reshape(-1,2)
 
-plt.figure(figsize=(10,10))
-plt.scatter(coords[:,0], coords[:,1], s=3)
+#plt.figure(figsize=(10,10))
+#plt.scatter(coords[:,0], coords[:,1], s=3)
 
 # compute spacing
 init_dist = np.sqrt((x_t[0]-x_s[0])**2+(y_t[0]-y_s[1])**2)
@@ -49,18 +49,23 @@ min_dist = d + dis # Minimum Distance between two fiber centers
 
 assert init_dist >= min_dist, "Too many fibers, cant fill these many number of fibers"
 
-# perturb points
-max_movement = (init_dist - min_dist)/2
-i = 0
-while i != len(coords):
-    delta = noise(max_movement)
-    if (dist_border + d/2) <= (coords[i] + max_movement * delta)[0] <= (a-(dist_border + d/2)) and (dist_border + d/2) <= (coords[i] + max_movement * delta)[1] <= (a-(dist_border + d/2)):
-        coords[i] = coords[i] + max_movement * delta
-        i += 1
-        continue
+### perturb points
+theta = np.random.uniform(0, 2*np.pi)
+#np.random.uniform(r, 2*r)
+while True:
+    rho = 0.1
+    coords[1] = coords[1][0] + rho*np.cos(theta), coords[1][1] + rho*np.sin(theta)
+    break
+##i = 0
+##while i != len(coords):
+##    delta = noise(max_movement)
+##    if (dist_border + d/2) <= (coords[i] + max_movement * delta)[0] <= (a-(dist_border + d/2)) and (dist_border + d/2) <= (coords[i] + max_movement * delta)[1] <= (a-(dist_border + d/2)):
+##        coords[i] = coords[i] + max_movement * delta
+##        i += 1
+##        continue
 
 # plot
-#plt.figure(figsize=(10,10))
+plt.figure(figsize=(10,10))
 plt.scatter(coords[:,0], coords[:,1], s=3)
 plt.show()
 
