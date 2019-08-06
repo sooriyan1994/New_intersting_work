@@ -1,4 +1,3 @@
-
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -6,11 +5,22 @@ import time
 #To calculate the time for execution of the program
 start = time.time()
 
+def minimum_distance(coords, i):
+    '''minimum distance between one coordinate point and the rest of all coordinate points'''
+
+    minimum = max(coords[:,0])
+    for j in np.delete(range(len(coords)), i):
+        if distance(coords[i], coords[j]) <= minimum:
+            minimum = distance(coords[i], coords[j])
+    return minimum
+
+
 def distance(X,Y):
     '''calculates the distance between two coordinate points'''
 
     dis = np.sqrt((X[0]-Y[0])**2+(X[1]-Y[1])**2)
     return round(dis,4)
+
 
 #Diameter of fiber
 d = 6 #in mm
@@ -18,7 +28,7 @@ d = 6 #in mm
 A_f = (np.pi * d**2)/4
 
 #Dimensions of the square are that are to be filled out
-a = 50 * (d/2) #side of square(in mm)
+a = 50 #side of square(in mm)
 A = a**2
 
 #Distance betweeen two fibers
@@ -27,7 +37,7 @@ dis = 0.1
 min_dist = d + dis 
 
 ##V_f = float(input("Preferred Volume fraction: "))
-V_f = 0.55
+V_f = 0.3
 
 # Number fo fibers to be filled for the corresponding volume fractio
 n = int((V_f * A)/A_f)
@@ -54,35 +64,21 @@ coords = np.append(np.stack(np.meshgrid(x_s, y_s), -1), np.stack(np.meshgrid(x_t
 
 # compute spacing
 init_dist = np.sqrt((x_t[0]-x_s[0])**2+(y_t[0]-y_s[1])**2)
-
+#checking if the fiber arrangement confers to the requirement
 assert init_dist >= min_dist, "Too many fibers, cant fill these many number of fibers"
 
 # perturb points
-for no_it in range(no_iter):
-    for i in range(len(coords)):
+##for no_it in range(no_iter + 1):
+for i in range(len(coords)):
+    rho = np.random.uniform(0, minimum_distance(coords,i)-min_dist)
+    print (rho)
+    while True:
         theta = np.random.uniform(0, 2*np.pi)
-        rho = 0.2
-        trig = True
-        
-        while trig:
-            temp = coords[i][0] + rho*np.cos(theta), coords[i][1] + rho*np.sin(theta)
-        
-            for j in np.delete(range(len(coords)), i):
-                if distance(coords[i], coords[j]) < min_dist:
-                    trig = False
-                    break
-            if trig:
-                coords[i] = temp
-                rho += 0.1
-                break
-       
-##i = 0
-##while i != len(coords):
-##    delta = noise(max_movement)
-##    if (dist_border + d/2) <= (coords[i] + max_movement * delta)[0] <= (a-(dist_border + d/2)) and (dist_border + d/2) <= (coords[i] + max_movement * delta)[1] <= (a-(dist_border + d/2)):
-##        coords[i] = coords[i] + max_movement * delta
-##        i += 1
-##        continue
+        if (d/2 + dist_border) <= coords[i][0] + rho*np.cos(theta) <=  a-(dist_border + d/2) and \
+           (d/2 + dist_border) <= coords[i][1] + rho*np.cos(theta) <=  a-(dist_border + d/2):
+            coords[i] = coords[i][0] + rho*np.cos(theta), coords[i][1] + rho*np.cos(theta)
+            break 
+
 
 #Time for execution
 stop = time.time()
