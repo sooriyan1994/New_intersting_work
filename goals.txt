@@ -1,10 +1,16 @@
-Assets Created - RVE generator
-		Composite Manufacturing Setup
+Assets Created - RVE generator (completed)
+		Composite Manufacturing Setup (in progress)
+		Damage Modelling of Materials (yet to start)
 
-PoCs carried out on PREMAP - Automated RVE generator
+PoCs carried out on PREMAP(tentative) - Automated RVE generator
 				Mecahnical Properties evaluation of RVE
-PoCs carried out without PREMAP - Multizone temperature controlled composite manufacturing setup
-				Process 
-No. of patents filed - 1
+				Virtual testing of materials
+				
+PoCs carried out without PREMAP(tentative) - Multizone temperature controlled composite manufacturing setup
+				Process Optimization of composite manufacturing through cure kinetics
+				
+No. of patents - 1
+
 No. of Journal papers - 1
+
 No. of Conference papers - 2
