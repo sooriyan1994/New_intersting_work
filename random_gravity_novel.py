@@ -24,6 +24,8 @@ print('Number of fibers to be filled in the area : ', n)
 
 dist_border = 0.1 # distance b/w the edge and the edge of fiber
 
+no_iters = 250
+
 #Discretising the square area
 x = numpy.linspace(dist_border+d/2, a-(dist_border+d/2), 600, dtype=numpy.float)
 y = numpy.linspace(dist_border+d/2, a-(dist_border+d/2), 600, dtype=numpy.float)
@@ -37,21 +39,22 @@ for i in range(len(index)):
     coords = numpy.append(coords, space[index[i]]).reshape(-1,2)
 
 #calculating the distance between points
-i = 0
-while i < n:
-    
-    for j in range(n):
-        if j != i:
-            distance = (coords[i][0] - coords[j][0])**2 + (coords[i][1] - coords[j][1])**2
-            if distance < mag:
-                delta = (mag - distance)
-                unit_x = (coords[i][0] - coords[j][0]) / distance
-                unit_y = (coords[i][1] - coords[j][1]) / distance
-                coords[i][0] = coords[i][0] + delta * unit_x
-                coords[i][1] = coords[i][1] + delta * unit_y
-
-        if j == n-1:
-            for 
+for i in range(n):
+    x_fix = ((np.argmin(coords)+1)/2) - 1
+    y_fix = np.argmin(coords) % 2
+            
+##    for j in range(n):
+##        if j != i:
+##            distance = (coords[i][0] - coords[j][0])**2 + (coords[i][1] - coords[j][1])**2
+##            if distance < mag:
+##                delta = (mag - distance)
+##                unit_x = (coords[i][0] - coords[j][0]) / distance
+##                unit_y = (coords[i][1] - coords[j][1]) / distance
+##                coords[i][0] = coords[i][0] + delta * unit_x
+##                coords[i][1] = coords[i][1] + delta * unit_y
+##
+##        if j == n-1:
+##            for 
             
 #plot
 plt.figure(figsize=(10,10))
