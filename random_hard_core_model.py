@@ -33,7 +33,7 @@ dist_border = 0.1
 x = numpy.linspace(dist_border+d/2, a-(dist_border+d/2), 600, dtype=numpy.float)
 y = numpy.linspace(dist_border+d/2, a-(dist_border+d/2), 600, dtype=numpy.float)
 
-space = numpy.stack(numpy.meshgrid(x, y), -1).reshape(-1,2) #Mesh of square area
+space = numpy.dstack(numpy.meshgrid(x, y)).reshape(-1,2) #Mesh of square area
 
 #creating a empty numpy aray to be filled with selected points
 coords = numpy.array([])
