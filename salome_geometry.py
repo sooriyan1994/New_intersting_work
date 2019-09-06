@@ -39,6 +39,7 @@ geompy.addToStudy( OY, 'OY' )
 geompy.addToStudy( OZ, 'OZ' )
 
 #Creating the square face from a sketch
+LocalCS = geompy.MakeMarker(0, 0, 0, 0, 1, 0, 0, 0, 1)
 geomObj = geompy.MakeMarker(0, 0, 0, 1, 0, 0, 0, 1, 0)
 sketch = geompy.Sketcher2D()
 sketch.addPoint(0, 0)
@@ -47,7 +48,7 @@ sketch.addSegmentAbsolute(hexagonal_mesh_noise.a, hexagonal_mesh_noise.a)
 sketch.addSegmentAbsolute(hexagonal_mesh_noise.a, 0)
 sketch.close()
 
-Sketch = sketch.wire(geomObj)
+Sketch = sketch.wire(LocalCS)
 Face = geompy.MakeFaceWires([Sketch], 1)
 geompy.addToStudy( Sketch, 'Sketch' )
 geompy.addToStudy( Face, 'Face' )
@@ -57,7 +58,7 @@ fiber_vertices = [] #collects the vertices of fibers
 
 #adding the circles to be partitioned
 for i in range(1, len(hexagonal_mesh_noise.coords)+1):
-	Vertex = geompy.MakeVertex(hexagonal_mesh_noise.coords[i-1][0], hexagonal_mesh_noise.coords[i-1][1], 0)
+	Vertex = geompy.MakeVertex(0, hexagonal_mesh_noise.coords[i-1][0], hexagonal_mesh_noise.coords[i-1][1])
 	Circle = geompy.MakeCircle(Vertex, None, hexagonal_mesh_noise.d/2)
 	#geompy.addToStudy( Vertex, 'Vertex_'+ str(i) ) #can be removed if we dont want it in the study
 	#geompy.addToStudy( Circle, 'Circle_'+ str(i) ) #can be removed if we dont want it in the study
@@ -68,18 +69,18 @@ for i in range(1, len(hexagonal_mesh_noise.coords)+1):
 Partition = geompy.MakePartition([Face], partition_tools, [], [], geompy.ShapeType["FACE"], 0, [], 0)
 geompy.addToStudy( Partition, 'Partition' )
 #Extrude the 2D sketch
-Extrusion = geompy.MakePrismVecH(Partition, OZ, hexagonal_mesh_noise.a)
+Extrusion = geompy.MakePrismVecH(Partition, OX, hexagonal_mesh_noise.a)
 geompy.addToStudy( Extrusion, 'Extrusion' )
 
 ##Getting all vertices from the extruded RVE
 back_O = geompy.GetVertexNearPoint(Extrusion, O)
-back_OA = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(hexagonal_mesh_noise.a, 0, 0))
-back_OB = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(0, hexagonal_mesh_noise.a, 0))
-back_AB = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(hexagonal_mesh_noise.a, hexagonal_mesh_noise.a, 0))
-front_1 = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(0, 0, hexagonal_mesh_noise.a))
-front_2 = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(hexagonal_mesh_noise.a, 0, hexagonal_mesh_noise.a))
+back_OA = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(0, hexagonal_mesh_noise.a, 0))
+back_OB = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(0,  0, hexagonal_mesh_noise.a))
+back_AB = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(0, hexagonal_mesh_noise.a, hexagonal_mesh_noise.a))
+front_1 = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(hexagonal_mesh_noise.a, 0, 0))
+front_2 = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(hexagonal_mesh_noise.a, hexagonal_mesh_noise.a, 0))
 front_3 = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(hexagonal_mesh_noise.a, hexagonal_mesh_noise.a, hexagonal_mesh_noise.a))
-front_4 = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(0, hexagonal_mesh_noise.a, hexagonal_mesh_noise.a))
+front_4 = geompy.GetVertexNearPoint(Extrusion, geompy.MakeVertex(hexagonal_mesh_noise.a, 0, hexagonal_mesh_noise.a))
 
 geompy.addToStudyInFather(Extrusion, back_O, "Point on the back face (0, 0, 0)")
 geompy.addToStudyInFather(Extrusion, back_OA, "Point on the back face (a, 0, 0)")
@@ -122,9 +123,9 @@ geompy.addToStudyInFather(Extrusion, edge_back_left, "Back left edge")
 ##Getting all the faces
 
 Right_face = geompy.GetFaceByNormale( Extrusion, OX )
-Left_face = geompy.GetFaceNearPoint( Extrusion, geompy.MakeVertex(0, hexagonal_mesh_noise.a/2, hexagonal_mesh_noise.a/2))
+Left_face = geompy.GetFaceNearPoint( Extrusion, geompy.MakeVertex(hexagonal_mesh_noise.a/2, 0, hexagonal_mesh_noise.a/2))
 Front_face = geompy.GetFaceByNormale( Extrusion, OZ )
-Back_face = geompy.GetFaceNearPoint( Extrusion, geompy.MakeVertex(hexagonal_mesh_noise.a/2, hexagonal_mesh_noise.a/2, 0))
+Back_face = geompy.GetFaceNearPoint( Extrusion, geompy.MakeVertex(0, hexagonal_mesh_noise.a/2, hexagonal_mesh_noise.a/2))
 Top_face = geompy.GetFaceByNormale( Extrusion, OY )
 Bottom_face = geompy.GetFaceByPoints( Extrusion, back_O, back_OA, front_1, front_2)
 

@@ -41,7 +41,7 @@ dis = 0.1
 min_dist = d + dis 
 
 ##V_f = float(input("Preferred Volume fraction: "))
-V_f = 0.7
+V_f = 0.6
 
 # Number fo fibers to be filled for the corresponding volume fractio
 n = int((V_f * A)/A_f)
