@@ -47,8 +47,9 @@ n = int((V_f * A)/A_f)
 print('Number of fibers to be filled in the area : ', n)
 
 # compute grid shape based on number of points
-num_y = numpy.int(numpy.sqrt(n/2) + 1)
-num_x = numpy.int(n / (2 * num_y) + 1)
+num_x = numpy.int(numpy.sqrt(n) + 1)
+num_y = numpy.int(n/num_x + 1)
+print(num_x,num_y)
 
 dist_border = 0.0002 # distance b/w the edge and the edge of fiber
 
@@ -56,7 +57,7 @@ eq_dis = (a - num_x * d - 2 * dist_border)/(num_x + 1)
 
 # create regularly spaced neurons
 x_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a - max(eq_dis,(d/2 + dist_border)), num_x, dtype=numpy.float)
-y_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a - max(eq_dis,(d/2 + dist_border)), num_y, dtype=numpy.float)
+y_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a - max(eq_dis,(d/2 + dist_border)), numpy.ceil(num_y/2), dtype=numpy.float)
 #coords = numpy.stack(numpy.meshgrid(x_s, y_s), -1).reshape(-1,2) #-1 simply means that it is an unknown dimension
 
 #creating hexagonal packing

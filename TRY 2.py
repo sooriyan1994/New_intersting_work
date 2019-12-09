@@ -40,28 +40,35 @@ dis = 0.0006
 min_dist = d + dis 
 
 ##V_f = float(input("Preferred Volume fraction: "))
-V_f = 0.65
+V_f = 0.55
 
 # Number fo fibers to be filled for the corresponding volume fraction
 n = int((V_f * A)/A_f)
 print('Number of fibers to be filled in the area : ', n)
 
 # compute grid shape based on number of points
-num_y = numpy.int(numpy.sqrt(n/2) + 1)
-num_x = numpy.int(n / (2 * num_y) + 1)
+num_x = numpy.int(round(numpy.sqrt(n)))
+num_y = numpy.int(numpy.ceil(n/num_x))
 
 dist_border = 0.0002 # distance b/w the edge and the edge of fiber
 
 eq_dis = (a - num_x * d - 2 * dist_border)/(num_x + 1)
 
 # create regularly spaced neurons
-x_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a - max(eq_dis,(d/2 + dist_border)), num_x, dtype=numpy.float)
-y_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a - max(eq_dis,(d/2 + dist_border)), num_y, dtype=numpy.float)
+x_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a, num_x+1, dtype=numpy.float)
+x_s = numpy.delete(x_s, -1)
+
+y_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a, numpy.ceil(num_y/2) + 1, dtype=numpy.float)
+y_s = numpy.delete(y_s, -1)
 #coords = numpy.stack(numpy.meshgrid(x_s, y_s), -1).reshape(-1,2) #-1 simply means that it is an unknown dimension
 
 #creating hexagonal packing
-x_t = numpy.arange(x_s[0] + (x_s[1]- x_s[0])/2 , a-(dist_border + d/2), x_s[1]-x_s[0], dtype=numpy.float)
-y_t = numpy.arange(y_s[0] + (y_s[1]- y_s[0])/2, a-(dist_border + d/2), y_s[1]-y_s[0], dtype=numpy.float)
+x_t = numpy.arange(x_s[0] + (x_s[1]- x_s[0])/2, a-(dist_border + d/2), x_s[1]-x_s[0], dtype=numpy.float)
+
+if num_y - numpy.ceil(num_y/2) == len(y_s):
+    y_t = numpy.arange(y_s[0] + (y_s[1]- y_s[0])/2, a-(dist_border + d/2), y_s[1]-y_s[0], dtype=numpy.float)
+else:
+    y_t = numpy.linspace(y_s[0] + (y_s[1]- y_s[0])/2, y_s[-2] + (y_s[-1]- y_s[-2])/2 , num_y - numpy.ceil(num_y/2), dtype=numpy.float)
 
 #Packing hexagonal mesh
 coords = numpy.append(numpy.dstack(numpy.meshgrid(x_s, y_s)), numpy.dstack(numpy.meshgrid(x_t, y_t))).reshape(-1,2)
@@ -108,8 +115,8 @@ stop = time.time()
 #print(stop-start) #Uncomment if you want to print the time of execution
 
 #Uncomment it to check if all fibers are sufficiently away from others
-#for i in range(len(coords)):
-#    print(minimum_distance(coords, i))
+##for i in range(len(coords)):
+##    print(minimum_distance(coords, i))
 
 #plot
 plt.figure(figsize=(10,10)) #Uncomment to plot the coordinate points
