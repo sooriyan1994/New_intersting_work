@@ -34,15 +34,15 @@ a = 0.040 #side of square(in mm)
 A = a**2
 
 #Distance betweeen two fibers
-dist_f = 0.0007
+dist_f = 0.0002
 # Minimum Distance between two fiber centers
 min_dist = d + dist_f 
 
 ##V_f = float(input("Preferred Volume fraction: "))
-V_f = 0.60
+V_f = 0.40
 
 # Number fo fibers to be filled for the corresponding volume fractio
-n = int((V_f * A)/A_f)
+n = round((V_f * A)/A_f)
 print('Number of fibers to be filled in the area : ', n)
 
 dist_border = 0.0002 # distance b/w the edge and the edge of fiber
@@ -50,49 +50,143 @@ dist_border = 0.0002 # distance b/w the edge and the edge of fiber
 #Checking the max limits of the model for the current configuration
 R = d/2 + dist_f/2 
 num_y_max = (a - 2*dist_border - d)//(numpy.sqrt(3)*R) + 1
-print('num_y_max : ',num_y_max)
-
 num_x_max = (a - 2 * dist_border - d)//(2*R) + 1
-print('num_x_max : ',num_x_max)
-
 num_x_t_max = (a - 2 * dist_border - (3 * d/2))//(2*R) + 1
-print('num_x_t_max : ',num_x_t_max)
 
-eq_dis_x = (a - num_x * D + (num_x - 1) * dist_f - 2 * dist_border)/(num_x + 1)
-eq_dis_y = (a - num_y * D + (num_x - 1) * dist_f - 2 * dist_border)/(num_x + 1)
+max_check = 0
 
 
-# compute spacing
-#init_dist = min(numpy.sqrt((x_t[0]-x_s[0])**2+(y_t[0]-y_s[0])**2),x_s[1]-x_s[0],y_s[1]-y_s[0])
-#checking if the fiber arrangement confers to the requirement
-#if init_dist < min_dist:
-#	print('Exiting...')
-#	raise SystemError('Too many fibers.. Expected Volume fraction cannot be attained')
+# compute grid shape based on number of points
+num_x_m1 = numpy.int(round(numpy.sqrt(n)))
+num_y_m1 = numpy.int(numpy.ceil(n/num_x_m1))
+
+if num_x_m1 <= num_x_max and num_y_m1 <= num_y_max:
+    eq_dis_x = (a - num_x_m1 * d - (num_x_m1 - 1) * dist_f - 2 * dist_border)/(num_x_m1 + 1)
+    eq_dis_y = (a - (num_y_m1 - 1) * numpy.sqrt(3) * R - 2 * dist_border)/(num_y_m1 + 1)
+
+    # create regularly spaced neurons
+    x_s_m1 = numpy.arange((d/2 + dist_border), a - (dist_border + d/2), min_dist, dtype=numpy.float)
+    x_s_m1 = x_s_m1[:num_x_m1]
+    for i in range(len(x_s_m1)):
+            x_s_m1[i] = x_s_m1[i] + (i+1) * eq_dis_x
+
+    y_s_m1 = numpy.arange((d/2 + dist_border), a - (dist_border + d/2), min_dist, dtype=numpy.float)
+    y_s_m1 = y_s_m1[:int(numpy.ceil(num_y_m1/2))]
+    for i in range(len(y_s_m1)):
+            y_s_m1[i] = y_s_m1[i] + (i+1) * eq_dis_y
+    #coords = numpy.stack(numpy.meshgrid(x_s, y_s), -1).reshape(-1,2) #-1 simply means that it is an unknown dimension
+
+    #creating hexagonal packing
+    x_t_m1 = numpy.arange(x_s_m1[0] + (x_s_m1[1]- x_s_m1[0])/2, a-(dist_border + d/2), x_s_m1[1]-x_s_m1[0], dtype=numpy.float)
+    if num_y_m1 - numpy.ceil(num_y_m1/2) == len(y_s_m1):
+        y_t_m1 = numpy.arange(y_s_m1[0] + (y_s_m1[1]- y_s_m1[0])/2, a-(dist_border + d/2), y_s_m1[1]-y_s_m1[0], dtype=numpy.float)
+    else:
+        y_t_m1 = numpy.linspace(y_s_m1[0] + (y_s_m1[1]- y_s_m1[0])/2, y_s_m1[-2] + (y_s_m1[-1]- y_s_m1[-2])/2 , num_y_m1 - numpy.ceil(num_y_m1/2), dtype=numpy.float)
+
+    # Number of actual fibers filled
+    n_act_m1 = len(x_s_m1) * len(y_s_m1) + len(x_t_m1) * len(y_t_m1)
+    print(n_act_m1)
+    
+else:
+    max_check = max_check + 1
+    n_act_m1 = 0
+
+# compute grid shape based on number of points
+num_y_m2 = numpy.int(numpy.sqrt(n) + 1)
+num_x_m2 = numpy.int(n/num_y_m2 + 1)
+
+if num_x_m2 <= num_x_max and num_y_m2 <= num_y_max:
+    # create regularly spaced neurons
+    x_s_m2 = numpy.linspace((d/2 + dist_border), a - (d/2 + dist_border), num_x_m2, dtype=numpy.float)
+    y_s_m2 = numpy.linspace((d/2 + dist_border), a - (d/2 + dist_border), numpy.ceil(num_y_m2/2), dtype=numpy.float)
+    #coords = numpy.stack(numpy.meshgrid(x_s, y_s), -1).reshape(-1,2) #-1 simply means that it is an unknown dimension
+
+    #creating hexagonal packing
+    x_t_m2 = numpy.arange(x_s_m2[0] + (x_s_m2[1]- x_s_m2[0])/2 , a-(dist_border + d/2), x_s_m2[1]-x_s_m2[0], dtype=numpy.float)
+    y_t_m2 = numpy.arange(y_s_m2[0] + (y_s_m2[1]- y_s_m2[0])/2, a-(dist_border + d/2), y_s_m2[1]-y_s_m2[0], dtype=numpy.float)
+
+    # Number of actual fibers filled
+    n_act_m2 = len(x_s_m2) * len(y_s_m2) + len(x_t_m2) * len(y_t_m2)
+    print(n_act_m2)
+else:
+    max_check = max_check + 1
+    n_act_m2 = 0
+    
+# compute grid shape based on number of points
+num_y_m3 = numpy.int(numpy.sqrt(n/2) + 1)
+num_x_m3 = numpy.int(n / (2 * num_y_m3) + 1)
+
+if num_x_m3 <= num_x_max and num_y_m3 <= num_y_max:
+    # create regularly spaced neurons
+    x_s_m3 = numpy.linspace((d/2 + dist_border), a - (d/2 + dist_border), num_x_m3, dtype=numpy.float)
+    y_s_m3 = numpy.linspace((d/2 + dist_border), a - (d/2 + dist_border), num_y_m3, dtype=numpy.float)
+    #coords = numpy.stack(numpy.meshgrid(x_s, y_s), -1).reshape(-1,2) #-1 simply means that it is an unknown dimension
+
+    #creating hexagonal packing
+    x_t_m3 = numpy.arange(x_s_m3[0] + (x_s_m3[1]- x_s_m3[0])/2 , a-(dist_border + d/2), x_s_m3[1]-x_s_m3[0], dtype=numpy.float)
+    y_t_m3 = numpy.arange(y_s_m3[0] + (y_s_m3[1]- y_s_m3[0])/2, a-(dist_border + d/2), y_s_m3[1]-y_s_m3[0], dtype=numpy.float)
+
+    # Number of actual fibers filled
+    n_act_m3 = len(x_s_m3) * len(y_s_m3) + len(x_t_m3) * len(y_t_m3)
+    print(n_act_m1)
+else:
+    max_check = max_check + 1
+    n_act_m3 = 0
+
+if max_check != 3:    
+    #Packing hexagonal mesh
+    if min(abs(n_act_m1 - n), abs(n_act_m2 - n), abs(n_act_m3 - n)) == abs(n_act_m1 - n):
+        coords = numpy.append(numpy.dstack(numpy.meshgrid(x_s_m1, y_s_m1)), numpy.dstack(numpy.meshgrid(x_t_m1, y_t_m1))).reshape(-1,2)
+        print('Number of fibers actually filled by this method : ', n_act_m1)
+        x_s = x_s_m1; y_s = y_s_m1; x_t = x_t_m1; y_t = y_t_m1; n_act = n_act_m1
+        print('Method 1')
+    elif min(abs(n_act_m3 - n), abs(n_act_m2 - n), abs(n_act_m1 - n)) == abs(n_act_m2 - n):
+        coords = numpy.append(numpy.dstack(numpy.meshgrid(x_s_m2, y_s_m2)), numpy.dstack(numpy.meshgrid(x_t_m2, y_t_m2))).reshape(-1,2)
+        print('Number of fibers actually filled by this method : ', n_act_m2)
+        x_s = x_s_m2; y_s = y_s_m2; x_t = x_t_m2; y_t = y_t_m2; n_act = n_act_m2
+        print('Method 2')
+    else:
+        coords = numpy.append(numpy.dstack(numpy.meshgrid(x_s_m3, y_s_m3)), numpy.dstack(numpy.meshgrid(x_t_m3, y_t_m3))).reshape(-1,2)
+        print('Number of fibers actually filled by this method : ', n_act_m3)
+        x_s = x_s_m3; y_s = y_s_m3; x_t = x_t_m3; y_t = y_t_m3; n_act = n_act_m3
+        print('Method 3')
+
+    # Number of actual fibers filled
+    V_f_act = n_act * A_f/A
+    print('Actual Volume fraction obtained by this method : ', V_f_act)
+
+    # compute spacing
+    init_dist = min(numpy.sqrt((x_t[0]-x_s[0])**2+(y_t[0]-y_s[0])**2),x_s[1]-x_s[0],y_s[1]-y_s[0])
+    print(init_dist)
+    #checking if the fiber arrangement confers to the requirement
+##    if init_dist < min_dist:
+##        print('Exiting...')
+##        raise SystemError('Too many fibers.. Expected Volume fraction cannot be attained') 
 
 #Number of iterations for Wongsto, Li algorithm
-no_iter = 250
-# perturb points
-for no_it in range(no_iter):
-    for i in range(len(coords)):
-        rho = numpy.random.uniform(0, minimum_distance(coords,i)-min_dist)
-        while True:
-            theta = numpy.random.uniform(0, 2*numpy.pi)
-            if (d/2 + dist_border) <= (coords[i][0] + rho*numpy.cos(theta)) <=  a-(dist_border + d/2) and \
-               (d/2 + dist_border) <= (coords[i][1] + rho*numpy.sin(theta)) <=  a-(dist_border + d/2):
-                coords[i] = coords[i][0] + rho*numpy.cos(theta), coords[i][1] + rho*numpy.sin(theta)
-                break
-            else:
-                for j in range(10):
-                    theta = theta + numpy.random.uniform(0, numpy.pi)
-                    if (d/2 + dist_border) <= (coords[i][0] + rho*numpy.cos(theta)) <=  a-(dist_border + d/2) and \
-                       (d/2 + dist_border) <= (coords[i][1] + rho*numpy.sin(theta)) <=  a-(dist_border + d/2):
-                        coords[i] = coords[i][0] + rho*numpy.cos(theta), coords[i][1] + rho*numpy.sin(theta)
-                        break
-                break
+##no_iter = 250
+### perturb points
+##for no_it in range(no_iter):
+##    for i in range(len(coords)):
+##        rho = numpy.random.uniform(0, minimum_distance(coords,i)-min_dist)
+##        while True:
+##            theta = numpy.random.uniform(0, 2*numpy.pi)
+##            if (d/2 + dist_border) <= (coords[i][0] + rho*numpy.cos(theta)) <=  a-(dist_border + d/2) and \
+##               (d/2 + dist_border) <= (coords[i][1] + rho*numpy.sin(theta)) <=  a-(dist_border + d/2):
+##                coords[i] = coords[i][0] + rho*numpy.cos(theta), coords[i][1] + rho*numpy.sin(theta)
+##                break
+##            else:
+##                for j in range(10):
+##                    theta = theta + numpy.random.uniform(0, numpy.pi)
+##                    if (d/2 + dist_border) <= (coords[i][0] + rho*numpy.cos(theta)) <=  a-(dist_border + d/2) and \
+##                       (d/2 + dist_border) <= (coords[i][1] + rho*numpy.sin(theta)) <=  a-(dist_border + d/2):
+##                        coords[i] = coords[i][0] + rho*numpy.cos(theta), coords[i][1] + rho*numpy.sin(theta)
+##                        break
+##                break
 
 #Time for execution
 stop = time.time()
-print(stop-start) #Uncomment if you want to print the time of execution
+#print(stop-start) #Uncomment if you want to print the time of execution
 
 #Uncomment it to check if all fibers are sufficiently away from others
 for i in range(len(coords)):
@@ -102,76 +196,3 @@ for i in range(len(coords)):
 plt.figure(figsize=(10,10)) #Uncomment to plot the coordinate points
 plt.scatter(coords[:,0], coords[:,1], s=3)
 plt.show()
-
-
-
-
-
-# compute grid shape based on number of points
-num_y = numpy.int(numpy.sqrt(n/2) + 1)
-num_x = numpy.int(n / (2 * num_y) + 1)
-
-# create regularly spaced neurons
-x_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a - max(eq_dis,(d/2 + dist_border)), num_x, dtype=numpy.float)
-y_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a - max(eq_dis,(d/2 + dist_border)), num_y, dtype=numpy.float)
-#coords = numpy.stack(numpy.meshgrid(x_s, y_s), -1).reshape(-1,2) #-1 simply means that it is an unknown dimension
-
-#creating hexagonal packing
-x_t = numpy.arange(x_s[0] + (x_s[1]- x_s[0])/2 , a-(dist_border + d/2), x_s[1]-x_s[0], dtype=numpy.float)
-y_t = numpy.arange(y_s[0] + (y_s[1]- y_s[0])/2, a-(dist_border + d/2), y_s[1]-y_s[0], dtype=numpy.float)
-
-
-
-
-# compute grid shape based on number of points
-num_x = numpy.int(round(numpy.sqrt(n)))
-num_y = numpy.int(numpy.ceil(n/num_x))
-
-# create regularly spaced neurons
-x_s = numpy.linspace(d/2 + dist_border)), a - (dist_border + d/2), min_dist, endpoint = False, dtype=numpy.float)
-for i in range(len(x_s)):
-    if i < (num_x+1)/2 :
-        x_s[i] = x_s[i] + eq_dis_x
-    elif i > (num_x+1)/2 :
-        x_s[i] = x_s[i] - eq_dis_x
-        
-y_s = numpy.arange(max(eq_dis,(d/2 + dist_border)), a - (dist_border + d/2), numpy.ceil(num_y/2) + 1, endpoint = False, dtype=numpy.float)
-for i in range(len(y_s)):
-    if i < (len(y_s)+1)/2 :
-        y_s[i] = y_s[i] + eq_dis
-    elif i > (len(y_s)+1)/2 :
-        y_s[i] = y_s[i] - eq_dis
-#coords = numpy.stack(numpy.meshgrid(x_s, y_s), -1).reshape(-1,2) #-1 simply means that it is an unknown dimension
-
-#creating hexagonal packing
-x_t = numpy.arange(x_s[0] + (x_s[1]- x_s[0])/2, a-(dist_border + d/2), x_s[1]-x_s[0], dtype=numpy.float)
-if num_y - numpy.ceil(num_y/2) == len(y_s):
-    y_t = numpy.arange(y_s[0] + (y_s[1]- y_s[0])/2, a-(dist_border + d/2), y_s[1]-y_s[0], dtype=numpy.float)
-else:
-    y_t = numpy.linspace(y_s[0] + (y_s[1]- y_s[0])/2, y_s[-2] + (y_s[-1]- y_s[-2])/2 , num_y - numpy.ceil(num_y/2), dtype=numpy.float)
-
-
-
-
-
-# compute grid shape based on number of points
-num_x = numpy.int(numpy.sqrt(n) + 1)
-num_y = numpy.int(n/num_x + 1)
-print(num_x,num_y)
-
-# create regularly spaced neurons
-x_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a - max(eq_dis,(d/2 + dist_border)), num_x, dtype=numpy.float)
-y_s = numpy.linspace(max(eq_dis,(d/2 + dist_border)), a - max(eq_dis,(d/2 + dist_border)), numpy.ceil(num_y/2), dtype=numpy.float)
-#coords = numpy.stack(numpy.meshgrid(x_s, y_s), -1).reshape(-1,2) #-1 simply means that it is an unknown dimension
-
-
-#Packing hexagonal mesh
-coords = numpy.append(numpy.dstack(numpy.meshgrid(x_s, y_s)), numpy.dstack(numpy.meshgrid(x_t, y_t))).reshape(-1,2)
-
-# Number of actual fibers filled
-n_act = len(x_s) * len(y_s) + len(x_t) * len(y_t)
-print('Number of fibers actually filled by this method : ', n_act)
-
-# Number of actual fibers filled
-V_f_act = n_act * A_f/A
-print('Actual Volume fraction obtained by this method : ', V_f_act)
