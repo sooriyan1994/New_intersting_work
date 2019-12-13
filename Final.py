@@ -30,7 +30,7 @@ d = 0.007 #in mm
 A_f = (numpy.pi * d**2)/4
 
 #Dimensions of the square are that are to be filled out
-a = 0.040 #side of square(in mm)
+a = 0.04 #side of square(in mm)
 A = a**2
 
 #Distance betweeen two fibers
@@ -39,7 +39,7 @@ dist_f = 0.0002
 min_dist = d + dist_f 
 
 ##V_f = float(input("Preferred Volume fraction: "))
-V_f = 0.40
+V_f = 0.65
 
 # Number fo fibers to be filled for the corresponding volume fractio
 n = round((V_f * A)/A_f)
@@ -58,31 +58,43 @@ max_check = 0
 
 # compute grid shape based on number of points
 num_x_m1 = numpy.int(round(numpy.sqrt(n)))
-num_y_m1 = numpy.int(numpy.ceil(n/num_x_m1))
+num_y_m1 = numpy.int(round(n/num_x_m1))
 
 if num_x_m1 <= num_x_max and num_y_m1 <= num_y_max:
-    eq_dis_x = (a - num_x_m1 * d - (num_x_m1 - 1) * dist_f - 2 * dist_border)/(num_x_m1 + 1)
-    eq_dis_y = (a - (num_y_m1 - 1) * numpy.sqrt(3) * R - 2 * dist_border)/(num_y_m1 + 1)
+    eq_dis_y = (a - (num_y_m1 - 1) * numpy.sqrt(3) * R - d - 2 * dist_border)/(num_y_m1 + 1)
 
     # create regularly spaced neurons
+    y_s_m1 = numpy.arange((d/2 + dist_border), a - (dist_border + d/2), 2 * numpy.sqrt(3) * R, dtype=numpy.float)
+    y_s_m1 = y_s_m1[:int(numpy.ceil(num_y_m1/2))]
+        
+    y_t_m1 = numpy.arange(y_s_m1[0] + (y_s_m1[1]- y_s_m1[0])/2, a-(dist_border + d/2), y_s_m1[1]-y_s_m1[0], dtype=numpy.float)
+    y_t_m1 = y_t_m1[:(num_y_m1 - len(y_s_m1))]
+
+    y_m1 = numpy.sort(numpy.concatenate((y_s_m1, y_t_m1)))
+    for i in range(len(y_m1)):
+        y_m1[i] = y_m1[i] + (i+1) * eq_dis_y
+        if i%2 == 0:
+            y_s_m1[i//2] = y_m1[i]
+        else:
+            y_t_m1[i//2] = y_m1[i]
+
     x_s_m1 = numpy.arange((d/2 + dist_border), a - (dist_border + d/2), min_dist, dtype=numpy.float)
     x_s_m1 = x_s_m1[:num_x_m1]
-    for i in range(len(x_s_m1)):
-            x_s_m1[i] = x_s_m1[i] + (i+1) * eq_dis_x
 
-    y_s_m1 = numpy.arange((d/2 + dist_border), a - (dist_border + d/2), min_dist, dtype=numpy.float)
-    y_s_m1 = y_s_m1[:int(numpy.ceil(num_y_m1/2))]
-    for i in range(len(y_s_m1)):
-            y_s_m1[i] = y_s_m1[i] + (i+1) * eq_dis_y
-    #coords = numpy.stack(numpy.meshgrid(x_s, y_s), -1).reshape(-1,2) #-1 simply means that it is an unknown dimension
-
-    #creating hexagonal packing
+    num_x_t_m1 = round((n - len(x_s_m1) * len(y_s_m1))/len(y_t_m1))
     x_t_m1 = numpy.arange(x_s_m1[0] + (x_s_m1[1]- x_s_m1[0])/2, a-(dist_border + d/2), x_s_m1[1]-x_s_m1[0], dtype=numpy.float)
-    if num_y_m1 - numpy.ceil(num_y_m1/2) == len(y_s_m1):
-        y_t_m1 = numpy.arange(y_s_m1[0] + (y_s_m1[1]- y_s_m1[0])/2, a-(dist_border + d/2), y_s_m1[1]-y_s_m1[0], dtype=numpy.float)
-    else:
-        y_t_m1 = numpy.linspace(y_s_m1[0] + (y_s_m1[1]- y_s_m1[0])/2, y_s_m1[-2] + (y_s_m1[-1]- y_s_m1[-2])/2 , num_y_m1 - numpy.ceil(num_y_m1/2), dtype=numpy.float)
+    x_t_m1 = x_t_m1[:num_x_t_m1]
 
+    x_m1 = numpy.sort(numpy.concatenate((x_s_m1, x_t_m1)))
+    print(x_m1)
+    eq_dis_x = (a - (len(x_m1)-1) * R - d - 2 * dist_border)/(len(x_m1) + 1)
+    for i in range(len(x_m1)):
+        x_m1[i] = x_m1[i] + (i+1) * eq_dis_x
+        if i%2 == 0:
+            x_s_m1[i//2] = x_m1[i]
+        else:
+            x_t_m1[i//2] = x_m1[i]
+          
     # Number of actual fibers filled
     n_act_m1 = len(x_s_m1) * len(y_s_m1) + len(x_t_m1) * len(y_t_m1)
     print(n_act_m1)
@@ -128,7 +140,7 @@ if num_x_m3 <= num_x_max and num_y_m3 <= num_y_max:
 
     # Number of actual fibers filled
     n_act_m3 = len(x_s_m3) * len(y_s_m3) + len(x_t_m3) * len(y_t_m3)
-    print(n_act_m1)
+    print(n_act_m3)
 else:
     max_check = max_check + 1
     n_act_m3 = 0
@@ -158,10 +170,11 @@ if max_check != 3:
     # compute spacing
     init_dist = min(numpy.sqrt((x_t[0]-x_s[0])**2+(y_t[0]-y_s[0])**2),x_s[1]-x_s[0],y_s[1]-y_s[0])
     print(init_dist)
+
     #checking if the fiber arrangement confers to the requirement
-##    if init_dist < min_dist:
-##        print('Exiting...')
-##        raise SystemError('Too many fibers.. Expected Volume fraction cannot be attained') 
+    if init_dist < min_dist:
+        print('Exiting...')
+        raise SystemError('Too many fibers.. Expected Volume fraction cannot be attained') 
 
 #Number of iterations for Wongsto, Li algorithm
 ##no_iter = 250
@@ -189,8 +202,8 @@ stop = time.time()
 #print(stop-start) #Uncomment if you want to print the time of execution
 
 #Uncomment it to check if all fibers are sufficiently away from others
-for i in range(len(coords)):
-    print(minimum_distance(coords, i))
+##for i in range(len(coords)):
+##    print(minimum_distance(coords, i))
 
 #plot
 plt.figure(figsize=(10,10)) #Uncomment to plot the coordinate points
